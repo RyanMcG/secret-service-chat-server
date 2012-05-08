@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="section">
+  <h2>Find Books</h2>
+  <div class="main-search">
+    <form method="GET" action="">
+      <div class="searchbar">
+        {{ form.search }}
+      </div>
+      <input type="submit" value="Search">
+    </form>
+  </div>
+  {% if results %}
+    {% for isbn, title, price in results %}
+    <li>ISBN: {{ isbn }}, Title: {{ title }}, Price: ${{ price }}</li>
+    {% endfor %}
+  {% endif %}
+</div>
+{% endblock %}

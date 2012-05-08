@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    {%- block head %}
+    <title>{% block title %}Bits & Books{% endblock %}</title>
+    <link href='/static/favicon.ico' rel='icon' type='image/x-icon'>
+    <link href='/static/css/screen.css' media='screen, projection' rel='stylesheet' type='text/css'>
+    <link href='/static/css/print.css' media='print' rel='stylesheet' type='text/css'>
+    <!--[if lt IE 8]>
+      <link href="/css/ie.css" media="screen, projection" rel="stylesheet" type="text/css" />
+    <![endif]-->
+    {% endblock -%}
+  </head>
+  <body class='bp'>
+    <div id='container'>
+      <div id='header'>
+        {%- block header %}
+        <h1>
+          <a href="{{ url_for("index") }}">
+            {% block headertitle %}Bits &amp; Books<span class="cursor">_</span>{% endblock %}
+          </a>
+        </h1>
+        {% endblock -%}
+        <ul id="navigation">
+          {%- block navigation %}
+          {% if logged_in %}
+            {% set nav_menu = [('logout', 'Logout')] %}
+          {% else %}
+            {% set nav_menu = [('login', 'Login'), ('register', 'Register')] %}
+          {% endif %}
+          {% for link, name in nav_menu %}
+            <li><a href="{{ url_for(link) }}">{{ name }}</a></li>
+          {% endfor %}
+          {% endblock -%}
+        </ul>
+      </div>
+        {% block flashy %}
+          {% with messages = get_flashed_messages(with_categories=True) %}
+            {% if messages %}
+              <ul class=flashes>
+                {% for category, message in messages %}
+                  <li class="{{ category }}">{{ message }}</li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+          {% endwith %}
+        {% endblock %}
+        {%- block container %}
+        <div id='content'>
+          {%- block content %}{% endblock -%}
+        </div>
+        {% endblock -%}
+      <div id='footer'>
+          {%- block footer %}{% endblock -%}
+      </div>
+    </div>
+  </body>
+</html>
