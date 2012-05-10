@@ -2,35 +2,22 @@
 <html>
   <head>
     {%- block head %}
-    <title>{% block title %}Bits & Books{% endblock %}</title>
-    <link href='/static/favicon.ico' rel='icon' type='image/x-icon'>
-    <link href='/static/css/screen.css' media='screen, projection' rel='stylesheet' type='text/css'>
-    <link href='/static/css/print.css' media='print' rel='stylesheet' type='text/css'>
-    <!--[if lt IE 8]>
-      <link href="/css/ie.css" media="screen, projection" rel="stylesheet" type="text/css" />
-    <![endif]-->
+    <title>{% block title %}Secret Service Chat{% endblock %}</title>
+    <link href='/static/images/favicon.ico' rel='icon' type='image/x-icon'>
     {% endblock -%}
   </head>
-  <body class='bp'>
+  <body>
     <div id='container'>
       <div id='header'>
         {%- block header %}
         <h1>
           <a href="{{ url_for("index") }}">
-            {% block headertitle %}Bits &amp; Books<span class="cursor">_</span>{% endblock %}
+            {% block headertitle %}Secret Service Chat{% endblock %}
           </a>
         </h1>
         {% endblock -%}
         <ul id="navigation">
           {%- block navigation %}
-          {% if logged_in %}
-            {% set nav_menu = [('logout', 'Logout')] %}
-          {% else %}
-            {% set nav_menu = [('login', 'Login'), ('register', 'Register')] %}
-          {% endif %}
-          {% for link, name in nav_menu %}
-            <li><a href="{{ url_for(link) }}">{{ name }}</a></li>
-          {% endfor %}
           {% endblock -%}
         </ul>
       </div>
