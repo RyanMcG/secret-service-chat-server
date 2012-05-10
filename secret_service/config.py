@@ -54,7 +54,7 @@ def init_logging(app):
         #Create timed, rotating file handler.
         logFileName = 'production.log' if app.is_production else \
                 'development.log'
-        logFilePath = path.join(app.root_path, 'log/' + logFileName)
+        logFilePath = path.join(app.root_path, 'logs/' + logFileName)
         thandler = TimedRotatingFileHandler(logFilePath,
                 when=app.config['LOGGER']['INTERVAL_TYPE'],
                 interval=app.config['LOGGER']['INTERVAL_COUNT'])
