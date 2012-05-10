@@ -23,7 +23,7 @@ init_logging(app)
 @app.route('/favicon.ico')
 def favicon():
     """Reroute requests to the favicon to the correct location in static."""
-    return send_from_directory(os.path.join(app.root_path, 'static'),
+    return send_from_directory(os.path.join(app.root_path, 'static', 'images'),
             'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
 
@@ -56,7 +56,7 @@ def run_application():
         address = "127.0.0.1"
         port = int(os.environ.get("PORT", 5000))
 
-    app.logger.info("Starting Bits & Books " + version)
+    app.logger.info("Starting the Super Secret Service Char Server " + version)
     app.run(address, port)
 
 
