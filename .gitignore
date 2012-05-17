@@ -1,4 +1,5 @@
-env
+/env
 *.pyc
 README.html
 config.yml
+/build
