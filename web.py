@@ -7,8 +7,9 @@ version = "0.1.0"
 import os
 
 from secret_service.config import read_system_config, init_logging
+import secret_service.model as model
 from flask import (Flask, send_from_directory, render_template, redirect,
-        request, url_for)
+        request, url_for, jsonify)
 from sys import argv
 
 #Create the app
@@ -40,12 +41,14 @@ def register():
 
 @app.route('/message', methods=["GET", "POST"])
 def get_message():
-    return {'herp': 'get'}
+    return {}
 
 
 @app.route('/message', methods=["PUT"])
 def put_message():
-    return {'herp': 'put'}
+    result = model.add_new_message(request)
+    app.logger.debug(result)
+    return jsonify(result)
 
 
 def run_application():
