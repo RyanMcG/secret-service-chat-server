@@ -38,3 +38,8 @@ def generate_encrypted_password(password):
 def generate_salt(length=8):
     """Generates a random string of the given length to be used as a salt."""
     return "".join(random.sample(string.letters + string.digits, length))
+
+def describe_request(request):
+    """Creates a helpful string to descirbe the given request."""
+    return str((request.url, request.method, request.headers['Content-Type'],
+            request.json if request.json else request.data))
