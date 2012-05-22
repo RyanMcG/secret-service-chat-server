@@ -11,7 +11,6 @@ import secret_service.model as model
 from secret_service.utils import describe_request as describe
 from flask import (Flask, send_from_directory, render_template, redirect,
         request, url_for, jsonify)
-from flask import json as jm
 from sys import argv
 
 
@@ -53,18 +52,8 @@ def put_message():
     app.logger.debug("Attempting to add new message (" + describe(request) + \
             ") to message store.")
 
-    # Set the request data
-    if request.json:
-        request_data = request.json
-    else:
-        jd = jm.JSONDecoder()
-        try:
-            request_data = jd.decode(request.data)
-        except ValueError:
-            request_data = {}
-
     # Try adding the message with the given data
-    result = model.add_new_message(request_data)
+    result = model.add_new_message(request.json)
 
     if not result['success']:
         # The message was not added
