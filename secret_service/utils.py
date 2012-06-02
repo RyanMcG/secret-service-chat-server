@@ -2,7 +2,15 @@ from flask import Markup
 import hashlib
 import string
 import random
+from bson.binary import Binary, UUID_SUBTYPE
+from bson.errors import BSONError
 
+def to_id(id_data):
+    """Takes a string and turns it into """
+    try:
+        return Binary(str(id_data), UUID_SUBTYPE)
+    except BSONError:
+        return False
 
 def debug_str(print_me):
     """Prints out an HTML escaped string in code and pre tags."""
