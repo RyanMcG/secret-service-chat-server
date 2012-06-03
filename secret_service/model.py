@@ -1,6 +1,7 @@
 from os import environ
 from pymongo import Connection
 from urlparse import urlparse
+from uuid import UUID
 from secret_service import science
 import uuid
 
@@ -43,8 +44,8 @@ else:
 # Declare the indecies we want mongo to have
 indicies = {
         'messages': ['receiver_id'],
-        'keys': ['fingerprint'],
-        'users': ['username']}
+        'keys': ['user_id', 'fingerprint'],
+        'users': [('username', {'unique': True, 'dropDups': True})]}
 
 
 # Define a function that uses the indicies above on a mongo database and
@@ -53,18 +54,21 @@ def ensure_indices(mdb):
     """Ensures that all of the defined indecies exist."""
     for coll, index_vec in indicies.iteritems():
         for index in index_vec:
-            mdb[coll].ensure_index(index)
+            if type(index) == tuple:
+                mdb[coll].ensure_index(index[0], **index[1])
+            else:
+                mdb[coll].ensure_index(index)
 
 # Call the above function.
 ensure_indices(db)
 
 
-def get_user(user_id, fields=None):
+def get_user(user, fields=None):
     """Returns a user if one is found in the data store with a matching id."""
-    if fields == None:
-        user_doc = db.users.find_one(user_id)
+    if type(user) == UUID:
+        user_doc = db.users.find_one(user, fields=fields)
     else:
-        user_doc = db.users.find_one(user_id, fields)
+        user_doc = db.users.find_one({'username': user}, fields=fields)
     return user_doc
 
 
@@ -75,12 +79,22 @@ def user_exists(user_id):
     return not None == get_user(user_id, {})
 
 
-def get_user_key(user_id, key_id=None):
+def get_key(key_id):
     """Function to help clients get a key for a specific user."""
-    if key_id == None:
-        return db.users.find({'_id': user_id}, {'keys': 1})['keys']
+    if type(key_id) == UUID:
+        return db.keys.find_one(key_id)
     else:
-        return None
+        return db.keys.find_one({'fingerprint': key_id})
+
+
+def get_user_keys(user_id):
+    """Retrives all available keys for a given user."""
+    return db.keys.find({'user_id': user_id}, ['key', 'fingerprint'])
+
+
+def user_has_key(user_id, key_id):
+    """Determines whether the given user has the given key or not."""
+    return bool(db.keys.find_one({'_id': key_id, 'user_id': user_id}))
 
 
 def add_message(data):
@@ -88,11 +102,12 @@ def add_message(data):
     return db.messages.insert(data)
 
 
-def add_keys(keys):
+def add_user_keys(user_id, keys):
     """Adds the given keys to the keys collection and returns a list of the
     uuids generated for them."""
-    return db.keys.insert([
-        {'_id': uuid.uuid4(),
+    return db.keys.insert([{
+        '_id': uuid.uuid4(),
+        'user_id': user_id,
         'fingerprint': science.key_to_fingerprint(k),
         'key': k} for k in keys])
 
@@ -104,10 +119,12 @@ def add_user(user):
 
     # Replace array of keys with an array of uuids where each uuid references
     # the original key in the keys collection.
-    user['keys'] = add_keys(user['keys'])
-
+    keys = user['keys']
+    del user['keys']
+    user_uuid = db.users.insert(user, safe=True)
+    add_user_keys(user_uuid, keys)
     # Add the user to the database and give the result back to the client.
-    return db.users.insert(user)
+    return user_uuid
 
 
 def get_messages(user_id):
