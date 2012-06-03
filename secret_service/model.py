@@ -1,6 +1,8 @@
+from os import environ
 from pymongo import Connection
-from secret_service import validators as is_valid
-from secret_service.user import User
+from urlparse import urlparse
+from secret_service import science
+import uuid
 
 
 # `db` is the mongodb database used by this application. It should have the
@@ -57,30 +59,63 @@ def ensure_indices(mdb):
 ensure_indices(db)
 
 
-def get_user(user_id):
+def get_user(user_id, fields=None):
     """Returns a user if one is found in the data store with a matching id."""
-    user_doc = db.users.find_one(user_id)
-    if user_doc != None:
-        return User(user_doc)
-    return None
+    if fields == None:
+        user_doc = db.users.find_one(user_id)
+    else:
+        user_doc = db.users.find_one(user_id, fields)
+    return user_doc
+
+
+def user_exists(user_id):
+    """Returns whether or not the given user_id exists in the database.
+
+    Effectively, this is the complement of get_user."""
+    return not None == get_user(user_id, {})
 
 
 def get_user_key(user_id, key_id=None):
     """Function to help clients get a key for a specific user."""
-    if key_id is None:
-        pass
+    if key_id == None:
+        return db.users.find({'_id': user_id}, {'keys': 1})['keys']
     else:
-        db.users.find({'_id': user_id})
+        return None
 
 
-def add_new_message(data):
-    """Adds a the given message to the messages index if it is valid."""
-    result = {
-            'success': True,
-            'data': data}
-    (result['success'], errors) = is_valid.new_message_request(data)
-    if (result['success']):
-        db.messages.insert(data)
-    else:
-        result['errors'] = errors
-    return result
+def add_message(data):
+    """Adds a the given message to the messages collection."""
+    return db.messages.insert(data)
+
+
+def add_keys(keys):
+    """Adds the given keys to the keys collection and returns a list of the
+    uuids generated for them."""
+    return db.keys.insert([
+        {'_id': uuid.uuid4(),
+        'fingerprint': science.key_to_fingerprint(k),
+        'key': k} for k in keys])
+
+
+def add_user(user):
+    """Adds the given user to the users collection."""
+    # Generates a random uuid for the given user.
+    user['_id'] = uuid.uuid4()
+
+    # Replace array of keys with an array of uuids where each uuid references
+    # the original key in the keys collection.
+    user['keys'] = add_keys(user['keys'])
+
+    # Add the user to the database and give the result back to the client.
+    return db.users.insert(user)
+
+
+def get_messages(user_id):
+    """Gets available messages for the given user_id."""
+    return db.messages.find({'receiver_id': user_id})
+
+
+def remove_messages(msg_ids):
+    """Removes each of the given messages from mongo."""
+    # TODO: Implement once authentication is.
+    pass
