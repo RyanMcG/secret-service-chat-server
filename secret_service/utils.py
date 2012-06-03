@@ -9,12 +9,13 @@ def jsonit(data):
             mimetype='application/json')
 
 
-def to_id(id_data):
+def to_uuid(uuid_str):
     """Takes a string and turns it into """
     try:
-        return Binary(str(id_data), UUID_SUBTYPE)
-    except BSONError:
+        return UUID(uuid_str)
+    except ValueError:
         return False
+
 
 def debug_str(print_me):
     """Prints out an HTML escaped string in code and pre tags."""
@@ -37,19 +38,6 @@ def str_to_digits(wannabe_number):
         ret = ''.join(filter(lambda x: x.isdigit(), str(wannabe_number)))
         return int(ret) if ret != '' else None
 
-
-def generate_encrypted_password(password):
-    """Encrypts the password by hashing it with a random salt."""
-    salt = generate_salt()
-    hash = hashlib.sha1()
-    hash.update(salt + password)
-    password = salt + "$" + hash.hexdigest()
-    return password
-
-
-def generate_salt(length=8):
-    """Generates a random string of the given length to be used as a salt."""
-    return "".join(random.sample(string.letters + string.digits, length))
 
 def describe_request(request):
     """Creates a helpful string to descirbe the given request."""
