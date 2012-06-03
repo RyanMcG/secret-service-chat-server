@@ -37,13 +37,38 @@ def index():
 
 @app.route('/user', methods=["PUT"])
 def put_user():
+    """Put user function registers the user in the request body and returns the
+    response as JSON."""
     result = chat.register_user(request.json)
     return jsonit(result)
 
 
-@app.route('/message', methods=["GET"])
-def get_message():
-    result = chat.get_messages(request.json)
+@app.route('/keys/<username>', methods=["GET"])
+def get_keys(username):
+    user_id = model.get_user(username, ['_id'])
+    if not user_id:
+        result = {
+                'success': False,
+                'keys': [],
+                'errors': [{
+                    'type': 'FATAL',
+                    'cause': 'Unable to find user with username (%s).' % \
+                            username}]}
+    else:
+        result = {
+                'success': True,
+                'keys': [x for x in chat.get_user_keys(user_id['_id'])]}
+    return jsonit(result)
+
+
+@app.route('/key/<key_id>', methods=["GET"])
+def get_key(key_id):
+    return jsonit(chat.get_key(key_id))
+
+
+@app.route('/message/<user_id>', methods=["GET"])
+def get_message(user_id):
+    result = chat.get_messages(user_id)
     return jsonit(result)
 
 
