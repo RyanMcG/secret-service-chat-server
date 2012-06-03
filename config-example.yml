@@ -3,9 +3,3 @@
 # You must set a secretkey
 application:
   secret_key: nL/z-)ZlA\.`M9T"C8C$
-
-storage:
-  production:
-    hostspec: mongodb://sscs:potus@localhost/
-  development:
-    hostspec: mongodb://sscs:potus@localhost/
