@@ -12,9 +12,9 @@ def read_system_config(app, cliargs):
     # If we were pased in a cli argument parst it as the server_type
     if len(cliargs) > 1:
         server_type = cliargs[1].lower()
-    elif "BITS_BOOKS_SERVER_TYPE" in environ:
+    elif "SECRET_SERVICE_SERVER_TYPE" in environ:
         #Check to see if an environment variable specifies server_type
-        server_type = environ.get("BITS_BOOKS_SERVER_TYPE")
+        server_type = environ.get("SECRET_SERVICE_SERVER_TYPE")
     else:
         app.logger.warning("Could not determine server type. Defaulting to '" +
                 server_type + "'.")
