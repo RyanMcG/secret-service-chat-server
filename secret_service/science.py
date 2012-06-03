@@ -1,11 +1,13 @@
 import rsa
+import base64
 import hashlib
 
 
 def verify_message(ciphertext, signature, pub_key):
     """Checks the signature on the given message."""
     try:
-        rsa.verify(ciphertext, signature, pub_key)
+        pk = rsa.PublicKey.load_pkcs1(base64.b64decode(pub_key), 'DER')
+        rsa.verify(ciphertext, base64.b64decode(signature), pk)
         return True
     except rsa.pkcs1.VerificationError:
         return False
