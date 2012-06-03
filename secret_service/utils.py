@@ -1,9 +1,13 @@
-from flask import Markup
-import hashlib
-import string
-import random
-from bson.binary import Binary, UUID_SUBTYPE
-from bson.errors import BSONError
+from flask import Markup, Response, json
+from uuid import UUID
+from bson import json_util
+
+
+def jsonit(data):
+    """Similar to jsonify, but includes some mongo niceness."""
+    return Response(json.dumps(data, default=json_util.default),
+            mimetype='application/json')
+
 
 def to_id(id_data):
     """Takes a string and turns it into """
