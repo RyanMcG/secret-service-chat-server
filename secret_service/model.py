@@ -3,8 +3,6 @@ from secret_service import validators as is_valid
 from secret_service.user import User
 
 
-mconn = Connection()
-
 # `db` is the mongodb database used by this application. It should have the
 # following collections:
 #
@@ -13,8 +11,9 @@ mconn = Connection()
 #           sender_id: ObjectId('...'),
 #           sender_key_id: "ask38fsk3"
 #           receiver_id: ObjectId('...'),
-#           receiver_key_id: "Akfhuio7"
-#           ciphertext: "...Some message here..."
+#           receiver_key_id: "Akfhuio7",
+#           message: "...Some message here...",
+#           signature: kjasbkfSkdjk83kakj
 #       }
 #
 #   users - Contains documents like:
@@ -28,20 +27,33 @@ mconn = Connection()
 #               }
 #           ]
 #       }
-db = mconn.sscs
 
-indicies = {}
-        #'ciphertexts': [
-            #{'sender_id': 1},
-            #{'receiver_id': 1}]}
+# Set up the proper db connection
+MONGOHQ_URL = environ.get("MONGOHQ_URL")
+if MONGOHQ_URL:
+    mconn = Connection(MONGOHQ_URL)
+    db = mconn[urlparse(MONGOHQ_URL).path[1:]]
+else:
+    mconn = Connection()
+    db = mconn.sscs
 
 
+# Declare the indecies we want mongo to have
+indicies = {
+        'messages': ['receiver_id'],
+        'keys': ['fingerprint'],
+        'users': ['username']}
+
+
+# Define a function that uses the indicies above on a mongo database and
+# creates them.
 def ensure_indices(mdb):
     """Ensures that all of the defined indecies exist."""
     for coll, index_vec in indicies.iteritems():
         for index in index_vec:
             mdb[coll].ensure_index(index)
 
+# Call the above function.
 ensure_indices(db)
 
 
