@@ -2,15 +2,14 @@
 # Author: Ryan McGowan
 #
 # Version:
-version = "0.1.0"
+version = "0.2.0"
 
 import os
 
 from secret_service.config import read_system_config, init_logging
-import secret_service.model as model
-from secret_service.utils import describe_request as describe
-from flask import (Flask, send_from_directory, render_template, redirect,
-        request, url_for, jsonify)
+from secret_service import chat, model
+from secret_service.utils import describe_request as describe, jsonit
+from flask import Flask, send_from_directory, render_template, request
 from sys import argv
 
 
@@ -36,15 +35,16 @@ def index():
     return render_template("index.html")
 
 
-@app.route('/register', methods=["GET", "POST"])
-def register():
-    return redirect(request.args.get("next") or url_for("index"))
+@app.route('/user', methods=["PUT"])
+def put_user():
+    result = chat.register_user(request.json)
+    return jsonit(result)
 
 
-@app.route('/message', methods=["GET", "POST"])
+@app.route('/message', methods=["GET"])
 def get_message():
-    #return model.get_messages(request
-    return jsonify({})
+    result = chat.get_messages(request.json)
+    return jsonit(result)
 
 
 @app.route('/message', methods=["PUT"])
@@ -53,7 +53,7 @@ def put_message():
             ") to message store.")
 
     # Try adding the message with the given data
-    result = model.add_new_message(request.json)
+    result = chat.add_new_message(request.json)
 
     if not result['success']:
         # The message was not added
@@ -61,7 +61,12 @@ def put_message():
     else:
         # Everything went as expected!
         app.logger.debug("Successfully added new message: " + str(result))
-    return jsonify(**result)
+    return jsonit(result)
+
+
+@app.route('/test_message', methods=["GET"])
+def temp_test_message():
+    return jsonit({'messages': [x for x in model.db.messages.find()]})
 
 
 def run_application():
