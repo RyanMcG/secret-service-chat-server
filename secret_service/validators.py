@@ -1,5 +1,5 @@
 from secret_service.utils import to_uuid
-from secret_service import model
+from secret_service import model, science
 import re
 import rsa
 import base64
@@ -23,6 +23,8 @@ def keys_are_uuids(data, keys):
                 'type': 'FATAL',
                 'cause':
                 "%s is not a valid UUID." % k})
+        else:
+            data[k] = uuid
     return (success, errors)
 
 
@@ -50,7 +52,7 @@ def new_message_request(data):
         if success:
             # All uuid fields are valid.
             for k in req_keys[:2]:
-                if not model.user_exists(to_uuid(data[k])):
+                if not model.user_exists(data[k]):
                     success = False
                     errors.append({
                         'type': 'FATAL',
@@ -59,15 +61,31 @@ def new_message_request(data):
                 # All users are valid
                 for k in req_keys[2:4]:
                     # Check that given keys exist
-                    user_id = to_uuid(data[k[:-6] + 'id'])
-                    user_key_id = to_uuid(data[k])
-                    keys = model.get_user_key(user_id)
-                    if user_key_id not in keys:
+                    user_key_id = data[k]
+                    key = model.get_key(user_key_id)
+                    if not key:
                         success = False
                         errors.append({
                             'type': 'FATAL',
-                            'cause': "Invalid key_id (%s) for %s." % (
-                                user_key_id, user_id)})
+                            'cause': "Invalid key_id (%s)." % (user_key_id)})
+                    elif key['user_id'] != data[k[:-6] + 'id']:
+                        success = False
+                        errors.append({
+                            'type': 'FATAL',
+                            'cause': ("Key's user_id ({0}) does not match " \
+                                "given user_id ({1}).").format(key['user_id'],
+                                    data[k[:-6] + 'id'])})
+                if success:
+                    if not science.verify_message(data['message'],
+                            data['signature'],
+                            model.get_key(
+                                data['sender_key_id'])['key']):
+                        success = False
+                        errors.append({
+                            'type': 'FATAL',
+                            'cause': ("Given key ({0}) could not verify " \
+                                "signature.").format(key['key'])})
+
     return (success, errors)
 
 
