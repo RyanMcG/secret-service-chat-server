@@ -93,7 +93,8 @@ def is_public_key(key):
     """Returns whether or not the given key is a valid RSA public key."""
     # TODO Implement
     try:
-        rsa.PublicKey.load_pkcs1(base64.b64decode(key), 'DER')
+		    # need to figure out java/python RSA interoperability
+        #rsa.PublicKey.load_pkcs1(base64.b64decode(key), 'DER')
         return True
     except Exception:
         return False
