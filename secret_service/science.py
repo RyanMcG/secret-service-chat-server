@@ -13,7 +13,7 @@ def verify_message(ciphertext, signature, pub_key):
     #    return True
     #except rsa.pkcs1.VerificationError:
     #    return False
-		return True
+    return True
 
 
 def str_to_public_key(pk_str):
